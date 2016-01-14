@@ -120,9 +120,7 @@ WORKDIR /database/
 COPY ./mysql/ .
 RUN service mysql start; \
     mysqladmin -u root password superInsecure; \
-    ./createdatabase_bc.sh root superInsecure oscar_12_1; \
     rm -rf \
-      /database/ \
       /tmp/* \
       /var/tmp/*
 
@@ -383,11 +381,18 @@ RUN SCRIPT=/run_export.sh; \
       echo "# Start MySQL and import dumps"; \
       echo "#"; \
       echo "service mysql start"; \
-      echo "mysql --user=root --password=superInsecure -e 'drop database oscar_12_1;'"; \
+      echo "echo Preparing oscar_12_1"; \
+      echo "echo drop"; \
+      echo "mysql --user=root --password=superInsecure -e 'drop database oscar_12_1;' || true"; \
+      echo "echo create"; \
       echo "mysql --user=root --password=superInsecure -e 'create database oscar_12_1;'"; \
       echo "mysql --user=root --password=superInsecure -e 'set autocommit=0;'"; \
       echo "mysql --user=root --password=superInsecure -e 'set unique_checks=0;'"; \
       echo "mysql --user=root --password=superInsecure -e 'set foreign_key_checks=0;'"; \
+      echo "echo import base"; \
+      echo "mysql --user=root --password=superInsecure oscar_12_1 < /database/oscar_12_1.sql"; \
+      echo "mysql --user=root --password=superInsecure -e 'commit;'"; \
+      echo "echo import clinic"; \
       echo 'find /volumes/import/ -name "*.sql" | \'; \
       echo "  while read IN"; \
       echo "  do"; \
@@ -398,6 +403,7 @@ RUN SCRIPT=/run_export.sh; \
       echo ""; \
       echo "# Start Tomcat6"; \
       echo "#"; \
+      echo "echo tomcat"; \
       echo "mkdir -p /tmp/tomcat6-tmp/"; \
       echo "/sbin/setuser tomcat6 /usr/lib/jvm/java-6-oracle/bin/java \\"; \
       echo "  -Djava.util.logging.config.file=/var/lib/tomcat6/conf/logging.properties \\"; \
@@ -408,6 +414,7 @@ RUN SCRIPT=/run_export.sh; \
       echo "  -Djava.io.tmpdir=/tmp/tomcat6-tmp org.apache.catalina.startup.Bootstrap start"; \
       echo "#"; \
       echo "mysql --user=root --password=superInsecure -e 'drop database oscar_12_1;'"; \
+      echo "service mysql stop"; \
     )  \
       >> ${SCRIPT}; \
     chmod +x ${SCRIPT}
