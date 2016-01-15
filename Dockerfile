@@ -454,3 +454,17 @@ VOLUME /volumes/
 #
 WORKDIR /
 CMD ["/sbin/my_init"]
+
+
+################################################################################
+# Temporary fix until ssh bug is patched (http://undeadly.org/cgi?action=article&sid=20160114142733)
+################################################################################
+
+
+RUN ( \
+      echo ""; \
+      echo "# Temporary ssh bug fix"; \
+      echo "# "; \
+      echo "Host *"; \
+      echo "UseRoaming no"; \
+  ) | tee -a /etc/ssh/ssh_config
