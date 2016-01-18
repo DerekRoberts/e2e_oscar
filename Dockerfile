@@ -28,6 +28,11 @@ ENV MONGO_VERSION 3.2.0
 # System and packages
 ################################################################################
 
+# Create users and groups
+#
+#RUN groupadd -r mongodb; \
+#    useradd -r -g mongodb mongodb
+
 
 # Update system and packages
 #
@@ -52,6 +57,7 @@ RUN echo 'deb http://ppa.launchpad.net/webupd8team/java/ubuntu trusty main' \
       mongodb-org-mongos=$MONGO_VERSION \
       mongodb-org-tools=$MONGO_VERSION \
       mysql-server \
+      numactl \
       oracle-java6-installer \
       tomcat6; \
     apt-get autoclean; \
@@ -142,7 +148,8 @@ RUN SERVICE=mongod;\
       echo "# Start mongod"; \
       echo "#"; \
       echo "mkdir -p /volumes/mongo/"; \
-      echo "exec mongod --storageEngine wiredTiger --dbpath /volumes/mongo/"; \
+      echo "chown -R mongodb:mongodb /volumes/mongo/"; \
+      echo "exec /sbin/setuser mongodb numactl --interleave=all mongod --storageEngine wiredTiger --dbpath /volumes/mongo/"; \
     )  \
       >> ${SCRIPT}; \
     chmod +x ${SCRIPT}
@@ -423,9 +430,9 @@ RUN SCRIPT=/run_export.sh; \
 # Crontab
 #
 RUN ( \
-      echo "# Run maintenance script (boot, Sundays at noon)"; \
+      echo "# Run maintenance script (boot, Sundays at 12 PST = 20 UTC)"; \
       echo "@reboot /db_maintenance.sh"; \
-      echo "0 12 * * 0 /db_maintenance.sh"; \
+      echo "0 20 * * 0 /db_maintenance.sh"; \
       echo ""; \
       echo "# Run SQL/E2E import/export (boot, daily 3:30 PST = 4:30 PDT = 11:30 UTC)"; \
       echo "@reboot /run_export.sh > /import.log"; \
