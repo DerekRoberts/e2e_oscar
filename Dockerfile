@@ -430,9 +430,9 @@ RUN SCRIPT=/run_export.sh; \
 # Crontab
 #
 RUN ( \
-      echo "# Run maintenance script (boot, Sundays at noon)"; \
+      echo "# Run maintenance script (boot, Sundays at 12 PST = 20 UTC)"; \
       echo "@reboot /db_maintenance.sh"; \
-      echo "0 12 * * 0 /db_maintenance.sh"; \
+      echo "0 20 * * 0 /db_maintenance.sh"; \
       echo ""; \
       echo "# Run SQL/E2E import/export (boot, daily 3:30 PST = 4:30 PDT = 11:30 UTC)"; \
       echo "@reboot /run_export.sh > /import.log"; \
