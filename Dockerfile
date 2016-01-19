@@ -28,11 +28,6 @@ ENV MONGO_VERSION 3.2.0
 # System and packages
 ################################################################################
 
-# Create users and groups
-#
-#RUN groupadd -r mongodb; \
-#    useradd -r -g mongodb mongodb
-
 
 # Update system and packages
 #
