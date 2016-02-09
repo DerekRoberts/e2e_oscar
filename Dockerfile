@@ -52,6 +52,7 @@ RUN echo 'deb http://ppa.launchpad.net/webupd8team/java/ubuntu trusty main' \
       mongodb-org-mongos=$MONGO_VERSION \
       mongodb-org-tools=$MONGO_VERSION \
       mysql-server \
+      numactl \
       oracle-java6-installer \
       tomcat6; \
     apt-get autoclean; \
@@ -142,7 +143,8 @@ RUN SERVICE=mongod;\
       echo "# Start mongod"; \
       echo "#"; \
       echo "mkdir -p /volumes/mongo/"; \
-      echo "exec mongod --storageEngine wiredTiger --dbpath /volumes/mongo/"; \
+      echo "chown -R mongodb:mongodb /volumes/mongo/"; \
+      echo "exec /sbin/setuser mongodb numactl --interleave=all mongod --storageEngine wiredTiger --dbpath /volumes/mongo/"; \
     )  \
       >> ${SCRIPT}; \
     chmod +x ${SCRIPT}
@@ -235,7 +237,7 @@ RUN SERVICE=autossh_test;\
       echo "    -N -R \${PORT_REMOTE}:localhost:3001 -o ServerAliveInterval=15 -o Protocol=2 \\"; \
       echo "    -o ServerAliveCountMax=3 -o ExitOnForwardFailure=yes -o StrictHostKeyChecking=no"; \
       echo "else"; \
-      echo "  rm /etc/service/"${SERVICE}; \
+      echo "  rm -rf /etc/service/"${SERVICE}; \
       echo "fi"; \
       echo "sleep 60"; \
     )  \
@@ -279,7 +281,7 @@ RUN SERVICE=rails;\
       echo ""; \
       echo "# Populate providers.txt with DOCTOR_IDS"; \
       echo "#"; \
-      echo "/app/providers.sh add \${DOCTOR_IDS}"; \
+      echo "/gateway/providers.sh add \${DOCTOR_IDS}"; \
       echo ""; \
       echo ""; \
       echo "# Start Rails server"; \
@@ -423,9 +425,9 @@ RUN SCRIPT=/run_export.sh; \
 # Crontab
 #
 RUN ( \
-      echo "# Run maintenance script (boot, Sundays at noon)"; \
+      echo "# Run maintenance script (boot, Sundays at 12 PST = 20 UTC)"; \
       echo "@reboot /db_maintenance.sh"; \
-      echo "0 12 * * 0 /db_maintenance.sh"; \
+      echo "0 20 * * 0 /db_maintenance.sh"; \
       echo ""; \
       echo "# Run SQL/E2E import/export (boot, daily 3:30 PST = 4:30 PDT = 11:30 UTC)"; \
       echo "@reboot /run_export.sh > /import.log"; \
