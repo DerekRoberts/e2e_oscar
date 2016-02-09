@@ -237,7 +237,7 @@ RUN SERVICE=autossh_test;\
       echo "    -N -R \${PORT_REMOTE}:localhost:3001 -o ServerAliveInterval=15 -o Protocol=2 \\"; \
       echo "    -o ServerAliveCountMax=3 -o ExitOnForwardFailure=yes -o StrictHostKeyChecking=no"; \
       echo "else"; \
-      echo "  rm /etc/service/"${SERVICE}; \
+      echo "  rm -rf /etc/service/"${SERVICE}; \
       echo "fi"; \
       echo "sleep 60"; \
     )  \
@@ -281,7 +281,7 @@ RUN SERVICE=rails;\
       echo ""; \
       echo "# Populate providers.txt with DOCTOR_IDS"; \
       echo "#"; \
-      echo "/app/providers.sh add \${DOCTOR_IDS}"; \
+      echo "/gateway/providers.sh add \${DOCTOR_IDS}"; \
       echo ""; \
       echo ""; \
       echo "# Start Rails server"; \
