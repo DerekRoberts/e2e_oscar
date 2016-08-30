@@ -86,7 +86,7 @@ RUN service mysql start; \
 
 
 ################################################################################
-# Scripts and Crontab
+# Scripts
 ################################################################################
 
 
@@ -104,7 +104,7 @@ RUN SCRIPT=/run_export.sh; \
       echo "#"; \
       echo "E2E_DIFF=\${E2E_DIFF:-off}"; \
       echo "E2E_DIFF_DAYS=\${E2E_DIFF_DAYS:-14}"; \
-      echo "TARGET=\${TARGET:-192.168.1.193}"; \
+      echo "TARGET=\${TARGET:-gateway}"; \
       echo ""; \
       echo ""; \
       echo "# Configure oscar12.properties"; \
@@ -154,7 +154,7 @@ RUN SCRIPT=/run_export.sh; \
 # Volumes
 #
 RUN mkdir -p /import/
-VOLUME /volumes/
+VOLUME /import/
 
 
 # Initialize
