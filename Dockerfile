@@ -1,8 +1,7 @@
 # Dockerfile for the PDC's Endpoint collection of services
 #
 #
-# Converts SQL to deidentified to E2E, which is queried as aggregate data.
-# Requires pre-configured and pre-approved SSH keys.  Contact admin@pdcbc.ca.
+# Imports OSCAR SQL dumps and exports deidentified E2E to a Gateway container.
 #
 # Example:
 # sudo docker pull pdcbc/endpoint
@@ -78,15 +77,12 @@ RUN cat oscar12.war.* > oscar12.war; \
 WORKDIR /database/
 COPY ./mysql/ .
 RUN service mysql start; \
-    mysqladmin -u root password superInsecure
-RUN service mysql start; \
-    mysql --user=root --password=superInsecure -e 'create database oscar_12_1;'
-RUN service mysql start; \
-    mysql --user=root --password=superInsecure oscar_12_1 < /database/oscar_12_1.sql
-#    ; \
-#    rm -rf \
-#      /tmp/* \
-#      /var/tmp/*
+    mysqladmin -u root password superInsecure; \
+    mysql --user=root --password=superInsecure -e 'create database oscar_12_1'; \
+    mysql --user=root --password=superInsecure oscar_12_1 < /database/oscar_12_1.sql; \
+    rm -rf \
+      /tmp/* \
+      /var/tmp/*
 
 
 ################################################################################
@@ -101,15 +97,14 @@ RUN SCRIPT=/run_export.sh; \
       echo "#!/bin/bash"; \
       echo "#"; \
       echo "# Halt on error and unset variables"; \
-      echo "set -i -o nounset"; \
-      echo ""; \
-      echo ""; \
+      echo "set -e -x -o nounset"; \
       echo ""; \
       echo ""; \
       echo "# Set variables"; \
       echo "#"; \
       echo "E2E_DIFF=\${E2E_DIFF:-off}"; \
       echo "E2E_DIFF_DAYS=\${E2E_DIFF_DAYS:-14}"; \
+      echo "TARGET=\${TARGET:-192.168.1.193}"; \
       echo ""; \
       echo ""; \
       echo "# Configure oscar12.properties"; \
@@ -117,18 +112,17 @@ RUN SCRIPT=/run_export.sh; \
       echo 'sed -i \'; \
       echo '  -e "s/^#*E2E_DIFF *=.*/E2E_DIFF = ${E2E_DIFF}/" \'; \
       echo '  -e "s/^#*E2E_DIFF_DAYS *=.*/E2E_DIFF_DAYS = ${E2E_DIFF_DAYS}/" \'; \
+      echo '  -e "s/^#*E2E_URL *=.*/E2E_URL = http:\/\/${TARGET}:3001\/records\/create/" \'; \
       echo "/usr/share/tomcat6/oscar12.properties"; \
       echo ""; \
       echo ""; \
       echo "# Start MySQL and import dumps"; \
       echo "#"; \
       echo "service mysql start"; \
-      echo "echo import clinic"; \
       echo 'find /import/ -name "*.sql" | \'; \
       echo "  while read IN"; \
       echo "  do"; \
       echo "    echo 'Processing:' \${IN}"; \
-      echo '    echo mysql --user=root --password=superInsecure oscar_12_1 < "${IN}"'; \
       echo '    mysql --user=root --password=superInsecure oscar_12_1 < "${IN}"'; \
       echo "  done"; \
       echo "mysql --user=root --password=superInsecure -e 'commit;'"; \
@@ -136,7 +130,6 @@ RUN SCRIPT=/run_export.sh; \
       echo ""; \
       echo "# Start Tomcat6"; \
       echo "#"; \
-      echo "echo tomcat"; \
       echo "mkdir -p /tmp/tomcat6-tmp/"; \
       echo "/sbin/setuser tomcat6 /usr/lib/jvm/java-6-oracle/bin/java \\"; \
       echo "  -Djava.util.logging.config.file=/var/lib/tomcat6/conf/logging.properties \\"; \
@@ -167,4 +160,4 @@ VOLUME /volumes/
 # Initialize
 #
 WORKDIR /
-#CMD ["/run_export.sh"]
+CMD ["/run_export.sh"]
