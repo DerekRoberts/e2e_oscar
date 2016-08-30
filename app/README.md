@@ -1,4 +1,4 @@
-WebARchive built using the following in a Dockerfile:
+OSCAR DB and WebARchive built using the following in a Dockerfile:
 
 WORKDIR /app/
 RUN apt-get update; \
