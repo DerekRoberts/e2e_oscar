@@ -6,7 +6,7 @@
 *.json
 *.xml
 *.sh
-!/*/*.sh
+!/config/*.sh
 .directory
 
 ########################

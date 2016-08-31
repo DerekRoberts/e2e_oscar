@@ -32,9 +32,7 @@ ENV CATALINA_BASE="/var/lib/tomcat6"
 
 # Update system, add PPA and install packages
 #
-RUN echo 'deb http://ppa.launchpad.net/webupd8team/java/ubuntu trusty main' \
-      >> /etc/apt/sources.list.d/webupd8team-java-trusty.list; \
-    apt-key adv --keyserver keyserver.ubuntu.com --recv-keys EEA14886; \
+RUN add-apt-repository -y ppa:webupd8team/java; \
     echo oracle-java6-installer shared/accepted-oracle-license-v1-1 \
       select true | /usr/bin/debconf-set-selections; \
     apt-get update; \
@@ -42,6 +40,7 @@ RUN echo 'deb http://ppa.launchpad.net/webupd8team/java/ubuntu trusty main' \
       libmysql-java \
       mysql-server \
       oracle-java6-installer \
+      oracle-java6-set-default \
       tomcat6; \
     apt-get autoclean; \
     apt-get clean; \
@@ -51,7 +50,8 @@ RUN echo 'deb http://ppa.launchpad.net/webupd8team/java/ubuntu trusty main' \
       /tmp/* \
       /usr/share/doc/ \
       /usr/share/doc-base/ \
-      /usr/share/man/
+      /usr/share/man/ \
+      /var/cache/oracle-jdk6-installer
 
 
 # Configure Tomcat6
