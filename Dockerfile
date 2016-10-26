@@ -74,21 +74,9 @@ RUN cat /oscar12.war.* > ${CATALINA_BASE}/webapps/oscar12.war; \
     rm /oscar12.war.*
 
 
-# Start MySQL and create database
+# Copy database, properties and entrypoint
 #
-COPY ./app/oscar_12_1.sql ./
-RUN service mysql start; \
-    mysqladmin -u root password superInsecure; \
-    mysql --user=root --password=superInsecure -e 'create database oscar_12_1'; \
-    mysql --user=root --password=superInsecure oscar_12_1 < /oscar_12_1.sql; \
-    rm -rf \
-      /oscar_12_1.sql \
-      /tmp/* \
-      /var/tmp/*
-
-
-# Copy properties and entrypoint
-#
+COPY ./database/ /oscar_db/
 COPY ./config/oscar12.properties /usr/share/tomcat6/
 COPY ./config/entrypoint.sh /
 
