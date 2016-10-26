@@ -20,19 +20,28 @@ sed -i \
 /usr/share/tomcat6/oscar12.properties
 
 
-# Start MySQL and import dumps
+# Start and configure MySQL, import database and load dumps
 #
 service mysql start
+mysqladmin -u root password superInsecure
+mysql --user=root --password=superInsecure -e 'drop database if exists oscar_12_1;'
+cd /oscar_db/
+./createdatabase_bc.sh root superInsecure oscar_12_1
+mysql --user=root --password=superInsecure -e 'insert into issue (code,description,role,update_date,sortOrderId) select icd9.icd9, icd9.description, "doctor", now(), '0' from icd9;' oscar_12_1
+
+
+# Import database and dumps
+#
+echo start data import
 find /import/ -name "*.sql" | \
   while read IN
   do
     echo 'Processing:' ${IN}
     mysql --user=root --password=superInsecure oscar_12_1 < "${IN}"
   done
-mysql --user=root --password=superInsecure -e 'commit;'
 
 
-# Start Tomcat6
+# Start Tomcat6 and E2E Export
 #
 mkdir -p /tmp/tomcat6-tmp/
 /sbin/setuser tomcat6 /usr/lib/jvm/java-6-oracle/bin/java \
