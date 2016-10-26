@@ -69,14 +69,14 @@ RUN mkdir -p \
 
 # Assemble WebARchive (.war)
 #
-COPY ./app/oscar12.war.* ./
+COPY ./war/oscar12.war.* ./
 RUN cat /oscar12.war.* > ${CATALINA_BASE}/webapps/oscar12.war; \
     rm /oscar12.war.*
 
 
 # Copy database, properties and entrypoint
 #
-COPY ./database/ /oscar_db/
+COPY ./oscar_db/ /oscar_db/
 COPY ./config/oscar12.properties /usr/share/tomcat6/
 COPY ./config/entrypoint.sh /
 
