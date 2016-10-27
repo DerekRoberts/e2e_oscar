@@ -55,7 +55,7 @@ find /import/ -name "*.sql" | \
   do
     echo 'Processing:' ${IN}
     mysql --user=root --password=${SQL_PW} oscar_12_1 < "${IN}"
-    echo "$(date +%Y-%m-%d-%T) ${IN}" | sudo tee -a /import/import.log
+    echo "$(date +%Y-%m-%d-%T) ${IN} started" | sudo tee -a /import/import.log
     [ "${DEL_DUMPS}" != "yes" ]|| mv "${IN}" "${IN}"-imported$(date +%Y-%m-%d-%T)
   done
 
@@ -72,4 +72,5 @@ mkdir -p /tmp/tomcat6-tmp/
   -Djava.io.tmpdir=/tmp/tomcat6-tmp org.apache.catalina.startup.Bootstrap start
 #
 mysql --user=root --password=${SQL_PW} -e 'drop database oscar_12_1;'
+echo "$(date +%Y-%m-%d-%T) completed" | sudo tee -a /import/import.log
 service mysql stop
