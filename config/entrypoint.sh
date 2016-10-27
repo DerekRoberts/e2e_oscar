@@ -40,10 +40,7 @@ sed -i \
 #
 cd /oscar_db/
 service mysql start
-mysqladmin -u root password ${SQL_PW}
-mysql --user=root --password=${SQL_PW} -e 'drop database if exists oscar_12_1;'
-./createdatabase_bc.sh root ${SQL_PW} oscar_12_1
-mysql --user=root --password=${SQL_PW} -e 'insert into issue (code,description,role,update_date,sortOrderId) select icd9.icd9, icd9.description, "doctor", now(), '0' from icd9;' oscar_12_1
+mysql --user=root --password=superInsecure -e "use mysql; update user set password=PASSWORD('${SQL_PW}') where User='root'; flush privileges;"
 
 
 # Import database and dumps, deleting based on $DEL_DUMPS

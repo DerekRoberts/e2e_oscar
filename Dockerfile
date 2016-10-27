@@ -74,11 +74,24 @@ RUN cat /oscar12.war.* > ${CATALINA_BASE}/webapps/oscar12.war; \
     rm /oscar12.war.*
 
 
-# Copy database, properties and entrypoint
+# Copy properties and entrypoint
 #
-COPY ./oscar_db/ /oscar_db/
 COPY ./config/oscar12.properties /usr/share/tomcat6/
 COPY ./config/entrypoint.sh /
+
+
+# Setup database
+#
+COPY ./oscar_db/ /oscar_db/
+WORKDIR /oscar_db/
+RUN service mysql start; \
+    mysqladmin -u root password superInsecure
+
+RUN service mysql start; \
+    ./createdatabase_bc.sh root superInsecure oscar_12_1
+
+RUN service mysql start; \
+    mysql --user=root --password=superInsecure -e 'insert into issue (code,description,role,update_date,sortOrderId) select icd9.icd9, icd9.description, "doctor", now(), '0' from icd9;' oscar_12_1
 
 
 ################################################################################
