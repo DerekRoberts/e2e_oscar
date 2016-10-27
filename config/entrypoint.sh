@@ -1,6 +1,7 @@
 #!/bin/bash
 #
 # Halt on error and unset variables
+#
 set -eux
 
 
@@ -49,8 +50,8 @@ echo start data import
 find /import/ -name "*.sql" | \
   while read IN
   do
-    echo 'Processing:' ${IN}
-    mysql --user=root --password=${SQL_PW} oscar_12_1 < "${IN}"
+    echo 'Processing:' "${IN}"
+    mysql --user=root --password="${SQL_PW}" oscar_12_1 < "${IN}"
     echo "$(date +%Y-%m-%d-%T) ${IN} started" | sudo tee -a /import/import.log
 
     if [ "${DEL_DUMPS}" = "yes" ]
@@ -62,7 +63,7 @@ find /import/ -name "*.sql" | \
   done
 
 
-# Start Tomcat6 and E2E Export
+# Start OSCAR E2E Export
 #
 mkdir -p /tmp/tomcat6-tmp/
 /sbin/setuser tomcat6 /usr/lib/jvm/java-6-oracle/bin/java \
@@ -76,6 +77,6 @@ mkdir -p /tmp/tomcat6-tmp/
 
 # Drop database, log and shut down
 #
-mysql --user=root --password=${SQL_PW} -e 'drop database oscar_12_1;'
+mysql --user=root --password="${SQL_PW}" -e 'drop database oscar_12_1;'
 echo "$(date +%Y-%m-%d-%T) completed" | sudo tee -a /import/import.log
 service mysql stop
