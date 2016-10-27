@@ -15,11 +15,10 @@ fi
 
 # Set variables
 #
-E2E_DIFF=${E2E_DIFF:-off}
-E2E_DIFF_DAYS=${E2E_DIFF_DAYS:-14}
-TARGET=${TARGET:-192.168.1.193}
-#
 DEL_DUMPS=${DEL_DUMPS:-"no"}
+E2E_DIFF=${E2E_DIFF:-"off"}
+E2E_DIFF_DAYS=${E2E_DIFF_DAYS:-"14"}
+TARGET=${TARGET:-"gateway"}
 
 
 # Random SQL password
@@ -37,17 +36,17 @@ sed -i \
 /usr/share/tomcat6/oscar12.properties
 
 
-# Start and configure MySQL, import database and load dumps
+# Start MySQL, set temp password and set up OSCAR database
 #
+cd /oscar_db/
 service mysql start
 mysqladmin -u root password ${SQL_PW}
 mysql --user=root --password=${SQL_PW} -e 'drop database if exists oscar_12_1;'
-cd /oscar_db/
 ./createdatabase_bc.sh root ${SQL_PW} oscar_12_1
 mysql --user=root --password=${SQL_PW} -e 'insert into issue (code,description,role,update_date,sortOrderId) select icd9.icd9, icd9.description, "doctor", now(), '0' from icd9;' oscar_12_1
 
 
-# Import database and dumps
+# Import database and dumps, deleting based on $DEL_DUMPS
 #
 echo start data import
 find /import/ -name "*.sql" | \
@@ -70,6 +69,9 @@ mkdir -p /tmp/tomcat6-tmp/
   -Djava.endorsed.dirs=/usr/share/tomcat6/endorsed -classpath /usr/share/tomcat6/bin/bootstrap.jar \
   -Dcatalina.base=/var/lib/tomcat6 -Dcatalina.home=/usr/share/tomcat6 \
   -Djava.io.tmpdir=/tmp/tomcat6-tmp org.apache.catalina.startup.Bootstrap start
+
+
+# Drop database, log and shut down
 #
 mysql --user=root --password=${SQL_PW} -e 'drop database oscar_12_1;'
 echo "$(date +%Y-%m-%d-%T) completed" | sudo tee -a /import/import.log
