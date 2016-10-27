@@ -52,7 +52,13 @@ find /import/ -name "*.sql" | \
     echo 'Processing:' ${IN}
     mysql --user=root --password=${SQL_PW} oscar_12_1 < "${IN}"
     echo "$(date +%Y-%m-%d-%T) ${IN} started" | sudo tee -a /import/import.log
-    [ "${DEL_DUMPS}" != "yes" ]|| mv "${IN}" "${IN}"-imported$(date +%Y-%m-%d-%T)
+
+    if [ "${DEL_DUMPS}" = "yes" ]
+    then
+        rm "${IN}"
+    else
+        mv "${IN}" "${IN}"-imported$(date +%Y-%m-%d-%T)
+    fi
   done
 
 
