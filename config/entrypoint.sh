@@ -1,7 +1,16 @@
 #!/bin/bash
 #
 # Halt on error and unset variables
-set -e -x -o nounset
+set -eux
+
+
+# Nothing to do without SQL files to process
+#
+if [ ! -s /import/*.sql ]
+then
+    echo "No SQL files found to process.  Exiting."
+    exit
+fi
 
 
 # Set variables
