@@ -18,6 +18,8 @@ fi
 E2E_DIFF=${E2E_DIFF:-off}
 E2E_DIFF_DAYS=${E2E_DIFF_DAYS:-14}
 TARGET=${TARGET:-192.168.1.193}
+#
+DEL_DUMPS=${DEL_DUMPS:-"no"}
 
 
 # Configure oscar12.properties
@@ -47,6 +49,7 @@ find /import/ -name "*.sql" | \
   do
     echo 'Processing:' ${IN}
     mysql --user=root --password=superInsecure oscar_12_1 < "${IN}"
+    [ "${DEL_DUMPS}" != "yes" ]|| mv "${IN}" "${IN}"-imported$(date +%Y-%m-%d-%T)
   done
 
 
