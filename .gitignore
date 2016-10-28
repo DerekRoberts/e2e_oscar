@@ -5,8 +5,9 @@
 *.env
 *.json
 *.xml
-*.sh
 .directory
+*.sql*
+~./test/import.sql
 
 ########################
 ### GitHub Suggested ###
