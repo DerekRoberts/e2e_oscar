@@ -7,7 +7,7 @@
 *.xml
 .directory
 *.sql*
-~./test/import.sql
+!test/sample10.sql
 
 ########################
 ### GitHub Suggested ###

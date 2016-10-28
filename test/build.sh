@@ -2,7 +2,7 @@
 #
 # Halt on error and unset variables
 #
-set -eu
+set -eux
 
 
 # Usage: ./this_script.sh SQL_PATH DEL_DUMPS
@@ -50,6 +50,15 @@ sudo docker run -ti --rm --name e2o -h e2o -e DEL_DUMPS="${DEL_DUMPS}" --link ga
 TIME_AFTER=$( date +%s )
 TIME_TOTAL=$( expr "${TIME_AFTER}" - "${TIME_BEFORE}" )
 RECORDS_AFTER=$( sudo docker exec -ti gateway_db mongo query_gateway_development --eval 'db.records.count();' | grep -v -e "MongoDB" -e "connecting" )
+
+
+# Clean up sample10.sql files, if used for testing
+#
+if [ ! -s ./test/sample10.sql ]
+then
+    rm ./test/sample10.sql-imported* || true
+    git checkout ./test/sample10.sql
+fi
 
 
 # Echo results

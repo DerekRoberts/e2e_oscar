@@ -75,12 +75,12 @@ TIME_TOTAL=$( expr "${TIME_AFTER}" - "${TIME_BEFORE}" )
 RECORDS_AFTER=$( sudo docker exec -ti gateway_db mongo query_gateway_development --eval 'db.records.count();' | grep -v -e "MongoDB" -e "connecting" )
 
 
-# Clean up import.sql files, if used for testing
+# Clean up sample10.sql files, if used for testing
 #
-if [ ! -s ./test/import.sql ]
+if [ ! -s ./test/sample10.sql ]
 then
-    rm ./test/import.sql-imported* || true
-    git checkout ./test/import.sql
+    rm ./test/sample10.sql-imported* || true
+    git checkout ./test/sample10.sql
 fi
 
 
