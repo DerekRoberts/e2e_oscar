@@ -13,15 +13,17 @@ then
     echo "This script consumes SQL files and exports E2E to a Gateway."
     echo
     echo "Usage: "
-    echo "  ./import.sh PATH"
-    echo
+    echo "  [VARS] ./import.sh PATH"
+    echo 
     echo "Path:"
     echo "  Location of SQL dumps to consume"
     echo
     echo "Optional variables:"
-    echo "  TAG  = latest [default], dev or any other Docker tags"
-    echo "  DEL  = no [default], yes will delete consumed files"
-    echo "  PULL = yes [default], no will not update the Docker image"
+    echo "  TAG   = latest [default], dev or any other Docker tags"
+    echo "  DEL   = no [default], yes will delete consumed files"
+    echo "  PULL  = yes [default], no will not update the Docker image"
+    echo "  NUKE  = no [default], yes will drop all MongoDb records (testing)"
+    echo "  BUILD = no [default], yes will build and use a local image (testing)"
     echo
     echo "Notes:"
     echo "  Gateway and Gateway database containers already"
@@ -37,17 +39,29 @@ fi
 SQL_PATH=$( realpath "${1}" )
 
 
-# Variables SQL delete, Docker tag, Docker pull and Mongo record drop (testing)
+# Variables SQL delete, Docker and Mongo record drops (testing)
 #
 DEL=${DEL:-"no"}
 TAG=${TAG:-"latest"}
 PULL=${PULL:-"yes"}
 NUKE=${NUKE:-"no"}
+BUILD=${BUILD:-"no"}
 
 
-# Pull Docker image, unless specified otherwise
+# If BUILD=yes, build and use local image, otherwise use Docker Hub
 #
-[ "${PULL}" = "no" ]|| \
+if [ "${BUILD}" = "yes" ]
+then
+    sudo docker build -t local_e2e_oscar .
+    IMAGE="local_e2e_oscar"
+else
+    IMAGE="hdcbc/e2e_oscar:${TAG}"
+fi
+
+
+# Pull Docker image, unless specified otherwise or using BUILD=yes
+#
+[ "${PULL}" = "no" ]|| [ "${BUILD}" = "yes" ]|| \
     sudo docker pull hdcbc/e2e_oscar:"${TAG}"
 
 
@@ -65,7 +79,7 @@ TIME_BEFORE=$( date +%s )
 
 # Run import container
 #
-sudo docker run -ti --rm --name e2o -h e2o -e DEL_DUMPS="${DEL}" --link gateway --volume "${SQL_PATH}":/import:rw hdcbc/e2e_oscar:"${TAG}"
+sudo docker run -ti --rm --name e2o -h e2o -e DEL_DUMPS="${DEL}" --link gateway --volume "${SQL_PATH}":/import:rw "${IMAGE}"
 
 
 # Updated record count and total time
