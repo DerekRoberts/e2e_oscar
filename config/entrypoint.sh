@@ -2,7 +2,7 @@
 #
 # Halt on error and unset variables
 #
-set -eux
+set -eu
 
 
 # Nothing to do without SQL files to process

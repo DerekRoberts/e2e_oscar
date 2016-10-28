@@ -2,7 +2,7 @@
 #
 # Halt on error and unset variables
 #
-set -eux
+set -eu
 
 
 # Check parameters
