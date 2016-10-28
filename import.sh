@@ -19,8 +19,9 @@ then
     echo "  Location of SQL dumps to consume"
     echo
     echo "Optional variables:"
-    echo "  TAG=latest [default], dev or any other Docker tags"
-    echo "  DEL=no [default], yes will delete consumed files"
+    echo "  TAG  = latest [default], dev or any other Docker tags"
+    echo "  DEL  = no [default], yes will delete consumed files"
+    echo "  PULL = yes [default], no will not update the Docker image"
     echo
     echo "Notes:"
     echo "  Gateway and Gateway database containers already"
@@ -31,11 +32,16 @@ then
 fi
 
 
-# Save SQL_PATH, converts to absolute
+# Set import directory and ensure absolute path
 #
 SQL_PATH=$( realpath "${1}" )
-TAG=${TAG:-"latest"}
+
+
+# Variables SQL delete, Docker tag, Docker pull and Mongo record drop (testing)
+#
 DEL=${DEL:-"no"}
+TAG=${TAG:-"latest"}
+NUKE=${NUKE:-"no"}
 
 
 # Pull Docker image
@@ -43,7 +49,13 @@ DEL=${DEL:-"no"}
 sudo docker pull hdcbc/e2e_oscar:"${TAG}"
 
 
-# Save record count and start time
+# Nuke MongoDb records, but only if explicity specified (w/ NUKE=yes)
+#
+[ "${NUKE}" != "yes" ]|| \
+    sudo docker exec -ti gateway_db mongo query_gateway_development --eval 'db.records.drop();'
+
+
+# Beginning record count and start time
 #
 RECORDS_BEFORE=$( sudo docker exec -ti gateway_db mongo query_gateway_development --eval 'db.records.count();' | grep -v -e "MongoDB" -e "connecting" )
 TIME_BEFORE=$( date +%s )
@@ -54,19 +66,29 @@ TIME_BEFORE=$( date +%s )
 sudo docker run -ti --rm --name e2o -h e2o -e DEL_DUMPS="${DEL}" --link gateway --volume "${SQL_PATH}":/import:rw hdcbc/e2e_oscar:"${TAG}"
 
 
-# Save new record count and calculate run time
+# Updated record count and total time
 #
 TIME_AFTER=$( date +%s )
 TIME_TOTAL=$( expr "${TIME_AFTER}" - "${TIME_BEFORE}" )
 RECORDS_AFTER=$( sudo docker exec -ti gateway_db mongo query_gateway_development --eval 'db.records.count();' | grep -v -e "MongoDB" -e "connecting" )
 
 
+# Clean up import.sql files, if used for testing
+#
+if [ ! -s ./test/import.sql ]
+then
+    rm ./test/import.sql-imported* || true
+    git checkout ./test/import.sql
+fi
+
+
 # Echo results
 #
 echo
-echo "Before: ${RECORDS_BEFORE}"
-echo " - drop -"
-echo "After:  ${RECORDS_AFTER}"
+echo "Records"
+echo "  Before:  ${RECORDS_BEFORE}"
+echo "  After:   ${RECORDS_AFTER}"
 echo
-echo "Total time: ${TIME_TOTAL} seconds"
+echo "Export time"
+echo "  Seconds: ${TIME_TOTAL}"
 echo
