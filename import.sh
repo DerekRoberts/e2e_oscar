@@ -41,12 +41,14 @@ SQL_PATH=$( realpath "${1}" )
 #
 DEL=${DEL:-"no"}
 TAG=${TAG:-"latest"}
+PULL=${PULL:-"yes"}
 NUKE=${NUKE:-"no"}
 
 
-# Pull Docker image
+# Pull Docker image, unless specified otherwise
 #
-sudo docker pull hdcbc/e2e_oscar:"${TAG}"
+[ "${PULL}" = "no" ]|| \
+    sudo docker pull hdcbc/e2e_oscar:"${TAG}"
 
 
 # Nuke MongoDb records, but only if explicity specified (w/ NUKE=yes)
