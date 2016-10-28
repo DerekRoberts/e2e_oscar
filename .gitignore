@@ -6,6 +6,8 @@
 *.json
 *.xml
 .directory
+*.sql*
+~./test/import.sql
 
 ########################
 ### GitHub Suggested ###
