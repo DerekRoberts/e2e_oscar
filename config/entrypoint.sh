@@ -9,7 +9,7 @@ set -eu
 #
 if [ ! -s /import/*.sql ]
 then
-    echo "No SQL files found to process.  Exiting."
+    echo "$(date +%Y-%m-%d-%T) No SQL files found to process.  Exiting."
     exit
 fi
 
