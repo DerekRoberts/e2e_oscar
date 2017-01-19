@@ -85,12 +85,13 @@ find /import/ -name "*.sql" | \
 
     # Rename or delete imported SQL
     #
-    echo "$(date +%Y-%m-%d-%T) ${IN} removed" | sudo tee -a /import/import.log
     if [ "${DEL_DUMPS}" = "yes" ]
     then
         rm "${IN}"
+        echo "$(date +%Y-%m-%d-%T) ${IN} removed" | sudo tee -a /import/import.log
     else
         mv "${IN}" "${IN}"-imported$(date +%Y-%m-%d-%T)
+        echo "$(date +%Y-%m-%d-%T) ${IN} renamed" | sudo tee -a /import/import.log
     fi
   done
 
@@ -98,5 +99,5 @@ find /import/ -name "*.sql" | \
 # Drop database, log and shut down
 #
 mysql --user=root --password="${SQL_PW}" -e 'drop database oscar_12_1;'
-echo "$(date +%Y-%m-%d-%T) completed" | sudo tee -a /import/import.log
+echo "$(date +%Y-%m-%d-%T) OSCAR database dropped" | sudo tee -a /import/import.log
 service mysql stop
