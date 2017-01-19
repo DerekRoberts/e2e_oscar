@@ -18,7 +18,7 @@ TARGET=${TARGET:-"gateway"}
 find /import/ -name "*.xz" | \
   while read IN
   do
-    echo '$(date +%Y-%m-%d-%T) Extracting:' "${IN}"
+    echo '$(date +%Y-%m-%d-%T) Extracting:' "${IN}" | sudo tee -a /import/import.log
     unxz "${IN}"
   done
 
@@ -27,7 +27,7 @@ find /import/ -name "*.xz" | \
 #
 if [ ! -s /import/*.sql ]
 then
-    echo "$(date +%Y-%m-%d-%T) No SQL files found to process.  Exiting."
+    echo "$(date +%Y-%m-%d-%T) No SQL files found to process.  Exiting." | sudo tee -a /import/import.log
     exit
 fi
 
