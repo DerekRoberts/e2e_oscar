@@ -55,16 +55,31 @@ find /import/ -name "*.xz" | \
   done
 
 
-# Import database and dumps, deleting based on $DEL_DUMPS
+# Import SQL, export E2E and delete/rename SQL (see $DEL_DUMPS=yes/no)
 #
+mkdir -p /tmp/tomcat6-tmp/
 echo "Start data import"
 find /import/ -name "*.sql" | \
   while read IN
   do
+    # Import SQL and log
+    #
     echo 'Processing:' "${IN}"
     echo "$(date +%Y-%m-%d-%T) ${IN} import started" | sudo tee -a /import/import.log
     mysql --user=root --password="${SQL_PW}" oscar_12_1 < "${IN}"
     echo "$(date +%Y-%m-%d-%T) ${IN} import finished" | sudo tee -a /import/import.log
+
+
+    # Export E2E and log
+    #
+    /sbin/setuser tomcat6 /usr/lib/jvm/java-6-oracle/bin/java \
+        -Djava.util.logging.config.file=/var/lib/tomcat6/conf/logging.properties \
+        -Djava.util.logging.manager=org.apache.juli.ClassLoaderLogManager \
+        -Djava.awt.headless=true -Xmx1024m -Xms1024m -XX:MaxPermSize=512m -server \
+        -Djava.endorsed.dirs=/usr/share/tomcat6/endorsed -classpath /usr/share/tomcat6/bin/bootstrap.jar \
+        -Dcatalina.base=/var/lib/tomcat6 -Dcatalina.home=/usr/share/tomcat6 \
+        -Djava.io.tmpdir=/tmp/tomcat6-tmp org.apache.catalina.startup.Bootstrap start
+
 
     if [ "${DEL_DUMPS}" = "yes" ]
     then
@@ -73,18 +88,6 @@ find /import/ -name "*.sql" | \
         mv "${IN}" "${IN}"-imported$(date +%Y-%m-%d-%T)
     fi
   done
-
-
-# Start OSCAR E2E Export
-#
-mkdir -p /tmp/tomcat6-tmp/
-/sbin/setuser tomcat6 /usr/lib/jvm/java-6-oracle/bin/java \
-  -Djava.util.logging.config.file=/var/lib/tomcat6/conf/logging.properties \
-  -Djava.util.logging.manager=org.apache.juli.ClassLoaderLogManager \
-  -Djava.awt.headless=true -Xmx1024m -Xms1024m -XX:MaxPermSize=512m -server \
-  -Djava.endorsed.dirs=/usr/share/tomcat6/endorsed -classpath /usr/share/tomcat6/bin/bootstrap.jar \
-  -Dcatalina.base=/var/lib/tomcat6 -Dcatalina.home=/usr/share/tomcat6 \
-  -Djava.io.tmpdir=/tmp/tomcat6-tmp org.apache.catalina.startup.Bootstrap start
 
 
 # Drop database, log and shut down
