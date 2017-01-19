@@ -72,6 +72,7 @@ find /import/ -name "*.sql" | \
 
     # Export E2E and log
     #
+    echo "$(date +%Y-%m-%d-%T) ${IN} export started" | sudo tee -a /import/import.log
     /sbin/setuser tomcat6 /usr/lib/jvm/java-6-oracle/bin/java \
         -Djava.util.logging.config.file=/var/lib/tomcat6/conf/logging.properties \
         -Djava.util.logging.manager=org.apache.juli.ClassLoaderLogManager \
@@ -79,8 +80,12 @@ find /import/ -name "*.sql" | \
         -Djava.endorsed.dirs=/usr/share/tomcat6/endorsed -classpath /usr/share/tomcat6/bin/bootstrap.jar \
         -Dcatalina.base=/var/lib/tomcat6 -Dcatalina.home=/usr/share/tomcat6 \
         -Djava.io.tmpdir=/tmp/tomcat6-tmp org.apache.catalina.startup.Bootstrap start
+    echo "$(date +%Y-%m-%d-%T) ${IN} export finished" | sudo tee -a /import/import.log
 
 
+    # Rename or delete imported SQL
+    #
+    echo "$(date +%Y-%m-%d-%T) ${IN} removed" | sudo tee -a /import/import.log
     if [ "${DEL_DUMPS}" = "yes" ]
     then
         rm "${IN}"
