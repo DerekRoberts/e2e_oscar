@@ -5,6 +5,17 @@
 set -eu
 
 
+# Extract and .XZ files
+#
+echo "Check for .XZ files to extract"
+find /import/ -name "*.xz" | \
+  while read IN
+  do
+    echo 'Extracting:' "${IN}"
+    unxz "${IN}"
+  done
+
+
 # Nothing to do without SQL files to process
 #
 if [ ! -s /import/*.sql ]
@@ -42,17 +53,6 @@ sed -i \
 cd /oscar_db/
 service mysql start
 mysql --user=root --password=superInsecure -e "use mysql; update user set password=PASSWORD('${SQL_PW}') where User='root'; flush privileges;"
-
-
-# Extract and .XZ files
-#
-echo "Check for .XZ files to extract"
-find /import/ -name "*.xz" | \
-  while read IN
-  do
-    echo 'Extracting:' "${IN}"
-    unxz "${IN}"
-  done
 
 
 # Import SQL, export E2E and delete/rename SQL (see $DEL_DUMPS=yes/no)
