@@ -62,8 +62,9 @@ find /import/ -name "*.sql" | \
   while read IN
   do
     echo 'Processing:' "${IN}"
+    echo "$(date +%Y-%m-%d-%T) ${IN} import started" | sudo tee -a /import/import.log
     mysql --user=root --password="${SQL_PW}" oscar_12_1 < "${IN}"
-    echo "$(date +%Y-%m-%d-%T) ${IN} started" | sudo tee -a /import/import.log
+    echo "$(date +%Y-%m-%d-%T) ${IN} import finished" | sudo tee -a /import/import.log
 
     if [ "${DEL_DUMPS}" = "yes" ]
     then
