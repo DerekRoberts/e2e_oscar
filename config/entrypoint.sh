@@ -7,7 +7,7 @@ set -eu
 
 # Set variables
 #
-DEL_DUMPS=${DEL_DUMPS:-"no"}
+DEL_DUMPS=${DEL_DUMPS:-"yes"}
 E2E_DIFF=${E2E_DIFF:-"off"}
 E2E_DIFF_DAYS=${E2E_DIFF_DAYS:-"14"}
 TARGET=${TARGET:-"gateway"}
@@ -82,13 +82,13 @@ find /import/ -name "*.sql" | \
 
     # Rename or delete imported SQL
     #
-    if [ "${DEL_DUMPS}" = "yes" ]
+    if [ "${DEL_DUMPS}" = "no" ]
     then
-        rm "${IN}"
-        echo "$(date +%Y-%m-%d-%T) ${IN} removed" | sudo tee -a /import/import.log
-    else
         mv "${IN}" "${IN}"-imported$(date +%Y-%m-%d-%T)
         echo "$(date +%Y-%m-%d-%T) ${IN} renamed" | sudo tee -a /import/import.log
+    else
+        rm "${IN}"
+        echo "$(date +%Y-%m-%d-%T) ${IN} removed" | sudo tee -a /import/import.log
     fi
   done
 
