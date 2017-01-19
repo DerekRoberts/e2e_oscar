@@ -44,9 +44,20 @@ service mysql start
 mysql --user=root --password=superInsecure -e "use mysql; update user set password=PASSWORD('${SQL_PW}') where User='root'; flush privileges;"
 
 
+# Extract and .XZ files
+#
+echo "Check for .XZ files to extract"
+find /import/ -name "*.xz" | \
+  while read IN
+  do
+    echo 'Extracting:' "${IN}"
+    unxz "${IN}"
+  done
+
+
 # Import database and dumps, deleting based on $DEL_DUMPS
 #
-echo start data import
+echo "Start data import"
 find /import/ -name "*.sql" | \
   while read IN
   do
