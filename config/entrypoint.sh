@@ -5,13 +5,20 @@
 set -eu
 
 
+# Set variables
+#
+DEL_DUMPS=${DEL_DUMPS:-"no"}
+E2E_DIFF=${E2E_DIFF:-"off"}
+E2E_DIFF_DAYS=${E2E_DIFF_DAYS:-"14"}
+TARGET=${TARGET:-"gateway"}
+
+
 # Extract and .XZ files
 #
-echo "Check for .XZ files to extract"
 find /import/ -name "*.xz" | \
   while read IN
   do
-    echo 'Extracting:' "${IN}"
+    echo '$(date +%Y-%m-%d-%T) Extracting:' "${IN}"
     unxz "${IN}"
   done
 
@@ -23,14 +30,6 @@ then
     echo "$(date +%Y-%m-%d-%T) No SQL files found to process.  Exiting."
     exit
 fi
-
-
-# Set variables
-#
-DEL_DUMPS=${DEL_DUMPS:-"no"}
-E2E_DIFF=${E2E_DIFF:-"off"}
-E2E_DIFF_DAYS=${E2E_DIFF_DAYS:-"14"}
-TARGET=${TARGET:-"gateway"}
 
 
 # Random SQL password
@@ -57,14 +56,11 @@ mysql --user=root --password=superInsecure -e "use mysql; update user set passwo
 
 # Import SQL, export E2E and delete/rename SQL (see $DEL_DUMPS=yes/no)
 #
-mkdir -p /tmp/tomcat6-tmp/
-echo "Start data import"
 find /import/ -name "*.sql" | \
   while read IN
   do
     # Import SQL and log
     #
-    echo 'Processing:' "${IN}"
     echo "$(date +%Y-%m-%d-%T) ${IN} import started" | sudo tee -a /import/import.log
     mysql --user=root --password="${SQL_PW}" oscar_12_1 < "${IN}"
     echo "$(date +%Y-%m-%d-%T) ${IN} import finished" | sudo tee -a /import/import.log
@@ -73,6 +69,7 @@ find /import/ -name "*.sql" | \
     # Export E2E and log
     #
     echo "$(date +%Y-%m-%d-%T) ${IN} export started" | sudo tee -a /import/import.log
+    mkdir -p /tmp/tomcat6-tmp/
     /sbin/setuser tomcat6 /usr/lib/jvm/java-6-oracle/bin/java \
         -Djava.util.logging.config.file=/var/lib/tomcat6/conf/logging.properties \
         -Djava.util.logging.manager=org.apache.juli.ClassLoaderLogManager \
@@ -101,3 +98,5 @@ find /import/ -name "*.sql" | \
 mysql --user=root --password="${SQL_PW}" -e 'drop database oscar_12_1;'
 echo "$(date +%Y-%m-%d-%T) OSCAR database dropped" | sudo tee -a /import/import.log
 service mysql stop
+echo "$(date +%Y-%m-%d-%T) Complete" | sudo tee -a /import/import.log
+echo "" | sudo tee -a /import/import.log
