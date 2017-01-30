@@ -18,7 +18,7 @@ TARGET=${TARGET:-"gateway"}
 find /import/ -name "*.xz" | \
   while read IN
   do
-    echo '$(date +%Y-%m-%d-%T) Extracting:' "${IN}" | sudo tee -a /import/import.log
+    echo "$(date +%Y-%m-%d-%T) Extracting:" "${IN}" | sudo tee -a /import/import.log
     unxz "${IN}"
   done
 
