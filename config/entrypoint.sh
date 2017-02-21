@@ -13,7 +13,7 @@ E2E_DIFF_DAYS=${E2E_DIFF_DAYS:-"14"}
 TARGET=${TARGET:-"gateway"}
 
 
-# Extract and .XZ files
+# Extract .XZ files
 #
 find /import/ -name "*.xz" | \
   while read IN
@@ -21,6 +21,17 @@ find /import/ -name "*.xz" | \
     echo "$(date +%Y-%m-%d-%T) Extracting:" "${IN}" | sudo tee -a /import/import.log
     unxz "${IN}"
   done
+
+
+# Extract .TAR files (.tar.tgz, .tar.gz and .tar.bz2)
+#
+find /import/ -name "*.tar.tgz" -o -name "*.tar.gz" -o -name "*.tar.bz2" | \
+while read IN
+do
+  echo "$(date +%Y-%m-%d-%T) Extracting:" "${IN}" | sudo tee -a /import/import.log
+  tar -xvf "${IN}"
+  rm "${IN}"
+done
 
 
 # Nothing to do without SQL files to process
