@@ -23,9 +23,9 @@ find /import/ -name "*.xz" | \
   done
 
 
-# Extract .TAR files (.tar.tgz, .tar.gz and .tar.bz2)
+# Extract .TAR files (.tgz, .gz and .bz2)
 #
-find /import/ -name "*.tar.tgz" -o -name "*.tar.gz" -o -name "*.tar.bz2" | \
+find /import/ -name "*.tgz" -o -name "*.gz" -o -name "*.bz2" | \
 while read IN
 do
   echo "$(date +%Y-%m-%d-%T) Extracting:" "${IN}" | sudo tee -a /import/import.log
