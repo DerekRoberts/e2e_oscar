@@ -70,10 +70,14 @@ mysql --user=root --password=superInsecure -e "use mysql; update user set passwo
 find /import/ -name "*.sql" | \
   while read IN
   do
+    # Rename SQL file
+    #
+    PROCESSING="${IN}"-processing
+
     # Import SQL and log
     #
     echo "$(date +%Y-%m-%d-%T) ${IN} import started" | sudo tee -a /import/import.log
-    mysql --user=root --password="${SQL_PW}" oscar_12_1 < "${IN}"
+    mysql --user=root --password="${SQL_PW}" oscar_12_1 < "${PROCESSING}"
     echo "$(date +%Y-%m-%d-%T) ${IN} import finished" | sudo tee -a /import/import.log
 
 
@@ -95,10 +99,10 @@ find /import/ -name "*.sql" | \
     #
     if [ "${DEL_DUMPS}" = "no" ]
     then
-        mv "${IN}" "${IN}"-imported$(date +%Y-%m-%d-%T)
+        mv "${PROCESSING}" "${IN}"-imported$(date +%Y-%m-%d-%T)
         echo "$(date +%Y-%m-%d-%T) ${IN} renamed" | sudo tee -a /import/import.log
     else
-        rm "${IN}"
+        rm "${PROCESSING}"
         echo "$(date +%Y-%m-%d-%T) ${IN} removed" | sudo tee -a /import/import.log
     fi
   done
