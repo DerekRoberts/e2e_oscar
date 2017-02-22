@@ -13,6 +13,11 @@ E2E_DIFF_DAYS=${E2E_DIFF_DAYS:-"14"}
 TARGET=${TARGET:-"gateway"}
 
 
+# Make sure all operations happen in /import/
+#
+cd /import/
+
+
 # Extract .XZ files
 #
 find /import/ -name "*.xz" | \
