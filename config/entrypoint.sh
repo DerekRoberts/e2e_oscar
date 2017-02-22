@@ -82,6 +82,7 @@ find /import/ -name "*.sql" | \
     # Rename SQL file
     #
     PROCESSING="${IN}"-processing
+    mv "${IN}" "${PROCESSING}"
 
     # Import SQL and log
     #
