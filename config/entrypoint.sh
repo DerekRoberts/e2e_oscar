@@ -30,7 +30,6 @@ while read IN
 do
   echo "$(date +%Y-%m-%d-%T) Extracting:" "${IN}" | sudo tee -a /import/import.log
   tar -xvf "${IN}"
-  rm "${IN}"
 done
 
 
