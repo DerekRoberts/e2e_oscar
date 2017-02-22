@@ -29,7 +29,7 @@ find /import/ -name "*.tgz" -o -name "*.gz" -o -name "*.bz2" | \
 while read IN
 do
   echo "$(date +%Y-%m-%d-%T) Extracting:" "${IN}" | sudo tee -a /import/import.log
-  tar -xvf "${IN}"
+  tar -xvf "${IN}" -C /import/
 done
 
 
