@@ -98,7 +98,7 @@ find /import/ -name "*.sql" | \
     /sbin/setuser tomcat6 /usr/lib/jvm/java-6-oracle/bin/java \
         -Djava.util.logging.config.file=/var/lib/tomcat6/conf/logging.properties \
         -Djava.util.logging.manager=org.apache.juli.ClassLoaderLogManager \
-        -Djava.awt.headless=true -Xmx1024m -Xms1024m -XX:MaxPermSize=512m -server \
+        -Djava.awt.headless=true -Xmx512m -Xms64m -XX:MaxPermSize=256m -server \
         -Djava.endorsed.dirs=/usr/share/tomcat6/endorsed -classpath /usr/share/tomcat6/bin/bootstrap.jar \
         -Dcatalina.base=/var/lib/tomcat6 -Dcatalina.home=/usr/share/tomcat6 \
         -Djava.io.tmpdir=/tmp/tomcat6-tmp org.apache.catalina.startup.Bootstrap start
