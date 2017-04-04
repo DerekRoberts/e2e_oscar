@@ -62,6 +62,13 @@ RUN mkdir -p \
       ${CATALINA_BASE}/webapps/
 
 
+# Disable strict mode and all ACID requirements
+#
+COPY ./config/my.cnf-mysqld .
+RUN sed -i '/skip-external-locking/r my.cnf-mysqld' /etc/mysql/my.cnf; \
+    rm my.cnf-mysqld
+
+
 ################################################################################
 # Setup
 ################################################################################
