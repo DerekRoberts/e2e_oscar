@@ -92,12 +92,8 @@ COPY ./config/entrypoint.sh /
 COPY ./oscar_db/ /oscar_db/
 WORKDIR /oscar_db/
 RUN service mysql start; \
-    mysqladmin -u root password superInsecure
-
-RUN service mysql start; \
-    ./createdatabase_bc.sh root superInsecure oscar_12_1
-
-RUN service mysql start; \
+    mysqladmin -u root password superInsecure; \
+    ./createdatabase_bc.sh root superInsecure oscar_12_1; \
     mysql --user=root --password=superInsecure -e 'insert into issue (code,description,role,update_date,sortOrderId) select icd9.icd9, icd9.description, "doctor", now(), '0' from icd9;' oscar_12_1
 
 
