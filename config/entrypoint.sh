@@ -18,12 +18,18 @@ TARGET=${TARGET:-"gateway"}
 cd /import/
 
 
+# Start logging
+#
+LOGFILE="/import/import.log"
+echo "" | sudo tee -a "${LOGFILE}"
+
+
 # Extract .XZ files
 #
 find /import/ -name "*.xz" | \
   while read IN
   do
-    echo "$(date +%Y-%m-%d-%T) Extracting:" "${IN}" | sudo tee -a /import/import.log
+    echo "$(date +%Y-%m-%d-%T) Extracting:" "${IN}" | sudo tee -a "${LOGFILE}"
     unxz "${IN}"
   done
 
@@ -33,7 +39,7 @@ find /import/ -name "*.xz" | \
 find /import/ -name "*.tgz" -o -name "*.gz" -o -name "*.bz2" | \
 while read IN
 do
-  echo "$(date +%Y-%m-%d-%T) Extracting:" "${IN}" | sudo tee -a /import/import.log
+  echo "$(date +%Y-%m-%d-%T) Extracting:" "${IN}" | sudo tee -a "${LOGFILE}"
   tar -xvf "${IN}" -C /import/
 done
 
@@ -47,7 +53,7 @@ find /import/ -mindepth 2 -name "*.sql" -exec mv {} /import/ \;
 #
 if [ ! -s /import/*.sql ]
 then
-    echo "$(date +%Y-%m-%d-%T) No SQL files found to process.  Exiting." | sudo tee -a /import/import.log
+    echo "$(date +%Y-%m-%d-%T) No SQL files found to process.  Exiting." | sudo tee -a "${LOGFILE}"
     exit
 fi
 
@@ -86,16 +92,16 @@ find /import/ -name "*.sql" | \
 
     # Import SQL and log
     #
-    echo "$(date +%Y-%m-%d-%T) ${IN} import started" | sudo tee -a /import/import.log
+    echo "$(date +%Y-%m-%d-%T) ${IN} import started" | sudo tee -a "${LOGFILE}"
     T_START=${SECONDS}
     mysql --user=root --password="${SQL_PW}" oscar_12_1 < "${PROCESSING}"
     T_TOTAL=$( expr ${SECONDS} - ${T_START} )
-    echo "$(date +%Y-%m-%d-%T) ${IN} import finished" | sudo tee -a /import/import.log
-    echo "  -- SQL import time = "${T_TOTAL}" seconds" | sudo tee -a /import/import.log
+    echo "$(date +%Y-%m-%d-%T) ${IN} import finished" | sudo tee -a "${LOGFILE}"
+    echo "  -- SQL import time = "${T_TOTAL}" seconds" | sudo tee -a "${LOGFILE}"
 
     # Export E2E and log
     #
-    echo "$(date +%Y-%m-%d-%T) ${IN} export started" | sudo tee -a /import/import.log
+    echo "$(date +%Y-%m-%d-%T) ${IN} export started" | sudo tee -a "${LOGFILE}"
     T_START=${SECONDS}
     mkdir -p /tmp/tomcat6-tmp/
     /sbin/setuser tomcat6 /usr/lib/jvm/java-6-oracle/bin/java \
@@ -106,8 +112,8 @@ find /import/ -name "*.sql" | \
         -Dcatalina.base=/var/lib/tomcat6 -Dcatalina.home=/usr/share/tomcat6 \
         -Djava.io.tmpdir=/tmp/tomcat6-tmp org.apache.catalina.startup.Bootstrap start
     T_TOTAL=$( expr ${SECONDS} - ${T_START} )
-    echo "$(date +%Y-%m-%d-%T) ${IN} export finished" | sudo tee -a /import/import.log
-    echo "  -- E2E export time = "${T_TOTAL}" seconds" | sudo tee -a /import/import.log
+    echo "$(date +%Y-%m-%d-%T) ${IN} export finished" | sudo tee -a "${LOGFILE}"
+    echo "  -- E2E export time = "${T_TOTAL}" seconds" | sudo tee -a "${LOGFILE}"
 
 
     # Rename or delete imported SQL
@@ -115,10 +121,10 @@ find /import/ -name "*.sql" | \
     if [ "${DEL_DUMPS}" = "no" ]
     then
         mv "${PROCESSING}" "${IN}"-imported$(date +%Y-%m-%d-%T)
-        echo "$(date +%Y-%m-%d-%T) ${IN} renamed" | sudo tee -a /import/import.log
+        echo "$(date +%Y-%m-%d-%T) ${IN} renamed" | sudo tee -a "${LOGFILE}"
     else
         rm "${PROCESSING}"
-        echo "$(date +%Y-%m-%d-%T) ${IN} removed" | sudo tee -a /import/import.log
+        echo "$(date +%Y-%m-%d-%T) ${IN} removed" | sudo tee -a "${LOGFILE}"
     fi
   done
 
@@ -126,7 +132,7 @@ find /import/ -name "*.sql" | \
 # Drop database, log and shut down
 #
 mysql --user=root --password="${SQL_PW}" -e 'drop database oscar_12_1;'
-echo "$(date +%Y-%m-%d-%T) OSCAR database dropped" | sudo tee -a /import/import.log
+echo "$(date +%Y-%m-%d-%T) OSCAR database dropped" | sudo tee -a "${LOGFILE}"
 service mysql stop
-echo "$(date +%Y-%m-%d-%T) Complete" | sudo tee -a /import/import.log
-echo "" | sudo tee -a /import/import.log
+echo "$(date +%Y-%m-%d-%T) Complete" | sudo tee -a "${LOGFILE}"
+echo "" | sudo tee -a "${LOGFILE}"
