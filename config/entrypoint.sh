@@ -87,13 +87,16 @@ find /import/ -name "*.sql" | \
     # Import SQL and log
     #
     echo "$(date +%Y-%m-%d-%T) ${IN} import started" | sudo tee -a /import/import.log
+    T_START=${SECONDS}
     mysql --user=root --password="${SQL_PW}" oscar_12_1 < "${PROCESSING}"
+    T_TOTAL=$( expr ${SECONDS} - ${T_START} )
     echo "$(date +%Y-%m-%d-%T) ${IN} import finished" | sudo tee -a /import/import.log
-
+    echo "  -- SQL import time = "${T_TOTAL}" seconds" | sudo tee -a /import/import.log
 
     # Export E2E and log
     #
     echo "$(date +%Y-%m-%d-%T) ${IN} export started" | sudo tee -a /import/import.log
+    T_START=${SECONDS}
     mkdir -p /tmp/tomcat6-tmp/
     /sbin/setuser tomcat6 /usr/lib/jvm/java-6-oracle/bin/java \
         -Djava.util.logging.config.file=/var/lib/tomcat6/conf/logging.properties \
@@ -102,7 +105,9 @@ find /import/ -name "*.sql" | \
         -Djava.endorsed.dirs=/usr/share/tomcat6/endorsed -classpath /usr/share/tomcat6/bin/bootstrap.jar \
         -Dcatalina.base=/var/lib/tomcat6 -Dcatalina.home=/usr/share/tomcat6 \
         -Djava.io.tmpdir=/tmp/tomcat6-tmp org.apache.catalina.startup.Bootstrap start
+    T_TOTAL=$( expr ${SECONDS} - ${T_START} )
     echo "$(date +%Y-%m-%d-%T) ${IN} export finished" | sudo tee -a /import/import.log
+    echo "  -- E2E export time = "${T_TOTAL}" seconds" | sudo tee -a /import/import.log
 
 
     # Rename or delete imported SQL
