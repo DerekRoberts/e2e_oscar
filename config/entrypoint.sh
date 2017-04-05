@@ -93,16 +93,16 @@ find /import/ -name "*.sql" | \
     # Import SQL and log
     #
     echo "$(date +%Y-%m-%d-%T) ${IN} import started" | sudo tee -a "${LOGFILE}"
-    T_START=${SECONDS}
+    T_SQL_START=${SECONDS}
     mysql --user=root --password="${SQL_PW}" oscar_12_1 < "${PROCESSING}"
-    T_TOTAL=$( expr ${SECONDS} - ${T_START} )
+    T_SQL_TOTAL=$( expr ${SECONDS} - ${T_SQL_START} )
     echo "$(date +%Y-%m-%d-%T) ${IN} import finished" | sudo tee -a "${LOGFILE}"
-    echo "  -- SQL import time = "${T_TOTAL}" seconds" | sudo tee -a "${LOGFILE}"
+    echo "  -- SQL import time = "${T_SQL_TOTAL}" seconds" | sudo tee -a "${LOGFILE}"
 
     # Export E2E and log
     #
     echo "$(date +%Y-%m-%d-%T) ${IN} export started" | sudo tee -a "${LOGFILE}"
-    T_START=${SECONDS}
+    T_E2E_START=${SECONDS}
     mkdir -p /tmp/tomcat6-tmp/
     /sbin/setuser tomcat6 /usr/lib/jvm/java-6-oracle/bin/java \
         -Djava.util.logging.config.file=/var/lib/tomcat6/conf/logging.properties \
@@ -111,10 +111,11 @@ find /import/ -name "*.sql" | \
         -Djava.endorsed.dirs=/usr/share/tomcat6/endorsed -classpath /usr/share/tomcat6/bin/bootstrap.jar \
         -Dcatalina.base=/var/lib/tomcat6 -Dcatalina.home=/usr/share/tomcat6 \
         -Djava.io.tmpdir=/tmp/tomcat6-tmp org.apache.catalina.startup.Bootstrap start
-    T_TOTAL=$( expr ${SECONDS} - ${T_START} )
+    T_E2E_TOTAL=$( expr ${SECONDS} - ${T_E2E_START} )
+    T_RATIO=$( echo ${T_E2E_TOTAL}/${T_SQL_TOTAL} | node -p )
     echo "$(date +%Y-%m-%d-%T) ${IN} export finished" | sudo tee -a "${LOGFILE}"
-    echo "  -- E2E export time = "${T_TOTAL}" seconds" | sudo tee -a "${LOGFILE}"
-
+    echo "  -- E2E export time = "${T_E2E_TOTAL}" seconds" | sudo tee -a "${LOGFILE}"
+    echo "  -- import:export   = "${T_RATIO}":1" | sudo tee -a "${LOGFILE}"
 
     # Rename or delete imported SQL
     #
