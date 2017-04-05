@@ -33,6 +33,7 @@ function secondsDHMS {
 
 # Start logging
 #
+T_START=${SECONDS}
 LOGFILE="/import/import.log"
 echo "" | sudo tee -a "${LOGFILE}"
 
@@ -155,4 +156,8 @@ mysql --user=root --password="${SQL_PW}" -e 'drop database oscar_12_1;'
 echo "$(date +%Y-%m-%d-%T) OSCAR database dropped" | sudo tee -a "${LOGFILE}"
 service mysql stop
 echo "$(date +%Y-%m-%d-%T) Complete" | sudo tee -a "${LOGFILE}"
+T_TOTAL=$( expr ${SECONDS} - ${T_START} )
+T_DHMS="$( secondsDHMS ${T_TOTAL} )"
+echo "  Processing time = "${T_TOTAL}" seconds" | sudo tee -a "${LOGFILE}"
+echo "                  = "${T_DHMS} | sudo tee -a "${LOGFILE}"
 echo "" | sudo tee -a "${LOGFILE}"
