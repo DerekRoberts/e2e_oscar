@@ -40,7 +40,7 @@ done
 
 # Move any SQL files into /import/ directory
 #
-find /import/ -name "*.sql" -exec mv {} /import/ \;
+find /import/ -mindepth 2 -name "*.sql" -exec mv {} /import/ \;
 
 
 # Nothing to do without SQL files to process
