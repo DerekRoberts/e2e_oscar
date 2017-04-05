@@ -18,6 +18,19 @@ TARGET=${TARGET:-"gateway"}
 cd /import/
 
 
+# Convert seconds to days:hours:minutes:seconds
+#
+function secondsDHMS {
+    local I=$1
+    local D=$(( I/60/60/24 ))
+    local H=$(( I/60/60%24 ))
+    local M=$(( I/60%60 ))
+    local S=$(( I%60 ))
+    printf '%02d:%02d:%02d:%02d' $D $H $M $S
+    echo " d:h:m:s"
+}
+
+
 # Start logging
 #
 LOGFILE="/import/import.log"
@@ -96,8 +109,11 @@ find /import/ -name "*.sql" | \
     T_SQL_START=${SECONDS}
     mysql --user=root --password="${SQL_PW}" oscar_12_1 < "${PROCESSING}"
     T_SQL_TOTAL=$( expr ${SECONDS} - ${T_SQL_START} )
+    T_SQL_DHMS="$( secondsDHMS ${T_SQL_TOTAL} )"
     echo "$(date +%Y-%m-%d-%T) ${IN} import finished" | sudo tee -a "${LOGFILE}"
-    echo "  -- SQL import time = "${T_SQL_TOTAL}" seconds" | sudo tee -a "${LOGFILE}"
+    echo "  SQL import time = "${T_SQL_TOTAL}" seconds" | sudo tee -a "${LOGFILE}"
+    echo "                  = "${T_SQL_DHMS} | sudo tee -a "${LOGFILE}"
+    echo "" | sudo tee -a "${LOGFILE}"
 
     # Export E2E and log
     #
@@ -113,9 +129,12 @@ find /import/ -name "*.sql" | \
         -Djava.io.tmpdir=/tmp/tomcat6-tmp org.apache.catalina.startup.Bootstrap start
     T_E2E_TOTAL=$( expr ${SECONDS} - ${T_E2E_START} )
     T_RATIO=$( echo ${T_E2E_TOTAL}/${T_SQL_TOTAL} | node -p )
+    T_E2E_DHMS="$( secondsDHMS ${T_E2E_TOTAL} )"
     echo "$(date +%Y-%m-%d-%T) ${IN} export finished" | sudo tee -a "${LOGFILE}"
-    echo "  -- E2E export time = "${T_E2E_TOTAL}" seconds" | sudo tee -a "${LOGFILE}"
-    echo "  -- import:export   = "${T_RATIO}":1" | sudo tee -a "${LOGFILE}"
+    echo "  E2E export time = "${T_E2E_TOTAL}" seconds" | sudo tee -a "${LOGFILE}"
+    echo "                  = "${T_E2E_DHMS} | sudo tee -a "${LOGFILE}"
+    echo "  E2E:SQL ratio   = "${T_RATIO}"x" | sudo tee -a "${LOGFILE}"
+    echo "" | sudo tee -a "${LOGFILE}"
 
     # Rename or delete imported SQL
     #
