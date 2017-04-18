@@ -4,12 +4,19 @@
 # Imports OSCAR SQL dumps and exports deidentified E2E to a Gateway container.
 #
 # Example:
-# sudo docker pull hdcbc/gateway
-# sudo docker run -d --name=gateway --restart=always \
-#   -v /encrypted/volumes/:/volumes/
+# sudo docker pull hdcbc/e2e_oscar
+# sudo docker run --rm --name e2e-oscar -h e2e-oscar \
+#   --link gateway \
+#   -v /encrypted/volumes/:/volumes/ \
 #   -e GATEWAY_ID=9999 \
-#   -e DOCTOR_IDS=11111,22222,...,99999
-#   hdcbc/gateway
+#   -e DOCTOR_IDS=11111,22222,...,99999 \
+#   -e DEL_DUMPS=no \
+#   -e E2E_DIFF=yes \
+#   -e E2E_DIFF_DAYS=14 \
+#   --cpus='2.5' \
+#   --memory=1280m \
+#   --net docker_default \
+#   hdcbc/e2e_oscar
 #
 #
 FROM phusion/passenger-ruby19
@@ -54,19 +61,12 @@ RUN add-apt-repository -y ppa:webupd8team/java; \
       /var/cache/oracle-jdk6-installer
 
 
-# Configure Tomcat6
+# Create Tomcat6 directories
 #
 RUN mkdir -p \
       ${CATALINA_HOME}/server/classes/ \
       ${CATALINA_HOME}/shared/classes/ \
       ${CATALINA_BASE}/webapps/
-
-
-# Disable strict mode and all ACID requirements
-#
-COPY ./config/my.cnf-mysqld .
-RUN sed -i '/skip-external-locking/r my.cnf-mysqld' /etc/mysql/my.cnf; \
-    rm my.cnf-mysqld
 
 
 ################################################################################
@@ -78,7 +78,14 @@ RUN sed -i '/skip-external-locking/r my.cnf-mysqld' /etc/mysql/my.cnf; \
 #
 COPY ./war/oscar12.war.* ./
 RUN cat /oscar12.war.* > ${CATALINA_BASE}/webapps/oscar12.war; \
-    rm /oscar12.war.*
+      rm /oscar12.war.*
+
+
+# Disable strict mode and all ACID requirements
+#
+COPY ./config/my.cnf-mysqld .
+RUN sed -i '/skip-external-locking/r my.cnf-mysqld' /etc/mysql/my.cnf; \
+      rm my.cnf-mysqld
 
 
 # Copy properties and entrypoint
@@ -92,9 +99,9 @@ COPY ./config/entrypoint.sh /
 COPY ./oscar_db/ /oscar_db/
 WORKDIR /oscar_db/
 RUN service mysql start; \
-    mysqladmin -u root password superInsecure; \
-    ./createdatabase_bc.sh root superInsecure oscar_12_1; \
-    mysql --user=root --password=superInsecure -e 'insert into issue (code,description,role,update_date,sortOrderId) select icd9.icd9, icd9.description, "doctor", now(), '0' from icd9;' oscar_12_1
+      mysqladmin -u root password superInsecure; \
+      ./createdatabase_bc.sh root superInsecure oscar_12_1; \
+      mysql --user=root --password=superInsecure -e 'insert into issue (code,description,role,update_date,sortOrderId) select icd9.icd9, icd9.description, "doctor", now(), '0' from icd9;' oscar_12_1
 
 
 ################################################################################
